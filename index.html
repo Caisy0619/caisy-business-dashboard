@@ -105,8 +105,13 @@ h1{font-size:20px;font-weight:600;color:#3A5C3A;margin-bottom:4px}
 </head>
 <body>
 <div class="wrap">
-<h1>📊 多公司经营看板</h1>
-<div class="sub">上传Excel → 自动分析 · 多公司对比 · 36个月趋势 · 同比环比</div>
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+<div>
+<h1 style="margin-bottom:0">📊 多公司经营看板</h1>
+<div class="sub" style="margin-bottom:0">上传Excel → 自动分析 · 多公司对比 · 36个月趋势 · 同比环比</div>
+</div>
+<button class="btn btno" id="dlTpl" style="font-size:14px;padding:10px 22px;cursor:pointer;white-space:nowrap">📋 下载空白模板</button>
+</div>
 
 <!-- Step 1: Upload -->
 <div class="step" id="s1">
@@ -117,13 +122,8 @@ h1{font-size:20px;font-weight:600;color:#3A5C3A;margin-bottom:4px}
 <label class="upload-box" id="uz" for="fi" style="flex:1;min-width:240px">
 <div class="ico">📂</div>
 <div class="txt">点击此处选择Excel文件</div>
-<div class="hint">可一次选多家公司 · 支持 <s>.xls</s> <s>.xlsx</s> 格式</div>
+<div class="hint">可一次选多家公司 · 支持 .xls .xlsx 格式</div>
 </label>
-<div style="display:flex;flex-direction:column;justify-content:center;gap:6px;padding:6px 0">
-<button class="btn btno" id="dlTpl" style="font-size:12px;padding:8px 16px;cursor:pointer">📋 下载空白模板</button>
-<div style="font-size:10px;color:#A0B0A0;line-height:1.4;max-width:140px">填写后拖拽或点击上传</div>
-</div>
-</div>
 
 <div class="file-list" id="fl"></div>
 <div class="act"><button class="btn" id="go" disabled>分析数据 →</button></div>
@@ -218,25 +218,53 @@ function st(s){[$('s1'),$('s2')].forEach(x=>x.classList.add('hd'));s.classList.r
 
 // ====== DOWNLOAD TEMPLATE ======
 $('dlTpl').onclick=function(){
-  const months=[];
-  for(let y=2023;y<=2025;y++)for(let m=1;m<=12;m++)months.push(y+'-'+(m<10?'0':'')+m);
+  this.disabled=true;
+  const btn=this;
   
-  const labels=['营业收入','营业成本','销售费用','管理费用','财务费用','净利润','薪酬总额','员工人数'];
-  
-  // Build rows
-  const rows=[['公司名称','在此输入公司名称'],['']];
-  rows.push(['科目',...months]);
-  labels.forEach(l=>rows.push([l,...months.map(()=>'')]));
-  
-  const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  
-  // Column widths
-  ws['!cols']=[{wch:14},...months.map(()=>({wch:11}))];
-  
-  XLSX.utils.book_append_sheet(wb,ws,'经营数据');
-  XLSX.writeFile(wb,'经营看板_模板.xlsx');
-  ts('✅ 模板已下载');
+  // Try to download the hosted template (with data validation dropdowns)
+  fetch('dashboard_template.xlsx')
+    .then(r=>{
+      if(!r.ok)throw new Error('not found');
+      return r.blob();
+    })
+    .then(blob=>{
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='经营看板_模板.xlsx';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      btn.disabled=false;
+      ts('✅ 模板已下载（支持下拉选择月份）');
+    })
+    .catch(()=>{
+      // Fallback: generate with SheetJS
+      const months=[];
+      for(let y=2023;y<=2025;y++)for(let m=1;m<=12;m++)months.push(y+'-'+(m<10?'0':'')+m);
+      
+      const labels=['营业收入','营业成本','销售费用','管理费用','财务费用','净利润','薪酬总额','员工人数'];
+      
+      const rows=[];
+      rows.push(['公司名称','在此填写公司名称','← 将这里改成你的公司名称']);
+      rows.push(['']);
+      rows.push(['科目',...months]);
+      labels.forEach((l,i)=>{
+        const hint=i===7?'（人）':'（元）';
+        rows.push([l,...months.map(()=>''),hint]);
+      });
+      rows.push([]);
+      rows.push(['💡 提示：']);
+      rows.push(['• 公司名称 → 改 B1']);
+      rows.push(['• 数字 → 直接填数字，不加逗号不加符号']);
+      rows.push(['• 科目名 → 不要修改']);
+      
+      const wb=XLSX.utils.book_new();
+      const ws=XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols']=[{wch:14},...months.map(()=>({wch:11})),{wch:18}];
+      XLSX.utils.book_append_sheet(wb,ws,'经营数据');
+      XLSX.writeFile(wb,'经营看板_模板.xlsx');
+      btn.disabled=false;
+      ts('✅ 模板已下载（离线版）');
+    });
 };
 
 // ====== UPLOAD ======
