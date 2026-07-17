@@ -238,28 +238,24 @@ $('dlTpl').onclick=function(){
     })
     .catch(()=>{
       // Fallback: generate with SheetJS
-      const months=[];
-      for(let y=2023;y<=2025;y++)for(let m=1;m<=12;m++)months.push(y+'-'+(m<10?'0':'')+m);
-      
       const labels=['营业收入','营业成本','销售费用','管理费用','财务费用','净利润','薪酬总额','员工人数'];
       
       const rows=[];
-      rows.push(['公司名称','在此填写公司名称','← 将这里改成你的公司名称']);
+      rows.push(['公司名称','在此填写公司名称','← 改成你的公司名称']);
       rows.push(['']);
-      rows.push(['科目',...months]);
-      labels.forEach((l,i)=>{
-        const hint=i===7?'（人）':'（元）';
-        rows.push([l,...months.map(()=>''),hint]);
-      });
+      // 12 empty month columns - user fills in their own
+      rows.push(['科目','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份','选择月份']);
+      labels.forEach(l=>rows.push([l,'','','','','','','','','','','','']));
       rows.push([]);
-      rows.push(['💡 提示：']);
-      rows.push(['• 公司名称 → 改 B1']);
-      rows.push(['• 数字 → 直接填数字，不加逗号不加符号']);
-      rows.push(['• 科目名 → 不要修改']);
+      rows.push(['💡 操作提示：']);
+      rows.push(['① 月份列 → 点击单元格填入格式如 2024-01']);
+      rows.push(['② 如需更多列 → Excel中复制列即可']);
+      rows.push(['③ 数字直接填，不加逗号不加符号']);
+      rows.push(['④ 科目名不要改']);
       
       const wb=XLSX.utils.book_new();
       const ws=XLSX.utils.aoa_to_sheet(rows);
-      ws['!cols']=[{wch:14},...months.map(()=>({wch:11})),{wch:18}];
+      ws['!cols']=[{wch:14},...Array(12).fill({wch:12}),{wch:18}];
       XLSX.utils.book_append_sheet(wb,ws,'经营数据');
       XLSX.writeFile(wb,'经营看板_模板.xlsx');
       btn.disabled=false;
