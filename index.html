@@ -321,8 +321,7 @@ go.onclick=async function(){
   if(!ok){ts('部分文件解析失败');return}
   if(CO.length<1){ts('请上传至少1个文件');return}
   ML=CO[0].ms;
-  bd();
-  st($('s2'));
+  try{bd();st($('s2'))}catch(e){ts('❌ '+e.message);console.error(e)}
 };
 
 function af(file){
@@ -387,6 +386,7 @@ function af(file){
 
 // ====== DASHBOARD ======
 function bd(){
+  try{
   CV=CO.map(()=>true);
   $('badges').innerHTML=CO.map((c,i)=>`<span style="padding:2px 10px;border-radius:12px;font-size:12px;background:${COLS[i]}22;color:${COLS[i]};font-weight:500">${c.nm}</span>`).join('');
   // Company toggles
@@ -395,6 +395,7 @@ function bd(){
     CO.map((c,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;color:${COLS[i]};font-weight:500">
     <input type="checkbox" checked onchange="toggleCo(${i},this.checked)"> ${c.nm}</label>`).join('');
   renderP0();renderP1();renderP2();renderP3();renderP4();
+  }catch(e){ts('❌ 渲染失败: '+e.message);console.error(e)}
 }
 function getVC(){return CO.filter((_,i)=>CV[i])}
 function toggleCo(i,v){CV[i]=v;const tab=$('tb').querySelector('.tab.on');if(tab){const p=tab.dataset.p;if(p==='p0')renderP0();else if(p==='p1')renderP1();else if(p==='p2')renderP2();else if(p==='p3')renderP3();else if(p==='p4')renderP4()}}
