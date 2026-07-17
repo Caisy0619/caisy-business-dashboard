@@ -438,27 +438,33 @@ function lv(co,k){const a=co.dt[k];if(!a||!a.length)return 0;for(let i=a.length-
 
 // ====== TAB 0: Overview ======
 function renderP0(){
-  const li=CO[0].dt.revenue.length-1, vc=getVC();
-  let h='<div class="stt">🔝 最新一期对比</div><div class="rg">';
-  vc.forEach((c,i)=>{
-    const r=lv(c,'revenue'),np=lv(c,'netprofit'),co=lv(c,'cost');
-    const gm=r?r1((r-co)/r*100):0;
-    const hc=lv(c,'headcount')||1,sa=lv(c,'salary')||0;
-    const er=sa?(r/hc)/(sa/hc):0;
-    const ci=CO.indexOf(c);
-    h+=`<div class="rc r${ci+1}"><div class="rn">${c.nm}</div>
-      <div style="font-size:10px;color:#aaa;margin:2px 0">${c.ms[li]}</div>
-      <div class="rv" style="color:${COLS[ci]}">${fm(r)}</div><div class="rs">营收</div>
-      <div class="ri"><span>毛利率 <b>${r1(gm)}%</b></span><span>净利润 <b>${fm(np)}</b></span><span>人效 <b>${r1(er)}x</b></span></div>
-    </div>`;
-  });
-  h+='</div>';
-  
-  h+='<div class="stt">📈 营收趋势</div><div class="cw"><canvas id="c0r" class="tc"></canvas></div>';
-  h+='<div class="stt">📉 毛利率趋势</div><div class="cw"><canvas id="c0g" class="tc"></canvas></div>';
-  h+='<div class="stt">💵 净利润趋势</div><div class="cw"><canvas id="c0n" class="tc"></canvas></div>';
-  $('p0').innerHTML=h;
-  setTimeout(r0c,50);
+  try {
+    const li=CO[0].dt.revenue.length-1, vc=getVC();
+    if(!vc.length){ $('p0').innerHTML='<div style="padding:20px;text-align:center;color:#8A9A8A">暂无公司数据</div>'; return }
+    let h='<div class="stt">🔝 最新一期对比</div><div class="rg">';
+    vc.forEach((c,i)=>{
+      if(!c||!c.dt||!c.dt.revenue){ 
+        h+=`<div class="rc r${i+1}"><div class="rn">${c.nm||'未知'}</div><div style="color:#b85450">数据异常</div></div>`; 
+        return 
+      }
+      const r=lv(c,'revenue'),np=lv(c,'netprofit'),co_=lv(c,'cost');
+      const gm=r?r1((r-co_)/r*100):0;
+      const hc=lv(c,'headcount')||1,sa=lv(c,'salary')||0;
+      const er=sa?(r/hc)/(sa/hc):0;
+      const ci=CO.indexOf(c);
+      h+=`<div class="rc r${ci+1}"><div class="rn">${c.nm}</div>
+        <div style="font-size:10px;color:#aaa;margin:2px 0">${c.ms[li]||''}</div>
+        <div class="rv" style="color:${COLS[ci]||'#4A7C59'}">${fm(r)}</div><div class="rs">营收</div>
+        <div class="ri"><span>毛利率 <b>${r1(gm)}%</b></span><span>净利润 <b>${fm(np)}</b></span><span>人效 <b>${r1(er)}x</b></span></div>
+      </div>`;
+    });
+    h+='</div><div style="padding:12px;color:#8A9A8A;font-size:12px;text-align:center">✅ 数据加载成功，图表渲染中...</div>';
+    $('p0').innerHTML=h;
+    try{ setTimeout(r0c,50) }catch(e){ console.error('r0c error:',e) }
+  } catch(e) { 
+    $('p0').innerHTML='<div style="padding:20px;color:#b85450">渲染错误: '+e.message+'</div>'; 
+    console.error(e);
+  }
 }
 
 function r0c(){
