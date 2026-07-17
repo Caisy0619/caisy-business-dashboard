@@ -112,12 +112,18 @@ h1{font-size:20px;font-weight:600;color:#3A5C3A;margin-bottom:4px}
 <div class="step" id="s1">
 <div class="sh"><span>1</span>上传公司文件</div>
 
+<div style="display:flex;gap:10px;align-items:stretch;margin-bottom:10px;flex-wrap:wrap">
 <input type="file" id="fi" accept=".xls,.xlsx" multiple style="display:none">
-<label class="upload-box" id="uz" for="fi">
+<label class="upload-box" id="uz" for="fi" style="flex:1;min-width:240px">
 <div class="ico">📂</div>
 <div class="txt">点击此处选择Excel文件</div>
 <div class="hint">可一次选多家公司 · 支持 <s>.xls</s> <s>.xlsx</s> 格式</div>
 </label>
+<div style="display:flex;flex-direction:column;justify-content:center;gap:6px;padding:6px 0">
+<button class="btn btno" id="dlTpl" style="font-size:12px;padding:8px 16px;cursor:pointer">📋 下载空白模板</button>
+<div style="font-size:10px;color:#A0B0A0;line-height:1.4;max-width:140px">填写后拖拽或点击上传</div>
+</div>
+</div>
 
 <div class="file-list" id="fl"></div>
 <div class="act"><button class="btn" id="go" disabled>分析数据 →</button></div>
@@ -209,6 +215,29 @@ function pt(n){return n===null||isNaN(n)?'-':(n>=0?'+':'')+r1(n)+'%'}
 function dh(id){if(CH[id]){CH[id].destroy();delete CH[id]}}
 
 function st(s){[$('s1'),$('s2')].forEach(x=>x.classList.add('hd'));s.classList.remove('hd')}
+
+// ====== DOWNLOAD TEMPLATE ======
+$('dlTpl').onclick=function(){
+  const months=[];
+  for(let y=2023;y<=2025;y++)for(let m=1;m<=12;m++)months.push(y+'-'+(m<10?'0':'')+m);
+  
+  const labels=['营业收入','营业成本','销售费用','管理费用','财务费用','净利润','薪酬总额','员工人数'];
+  
+  // Build rows
+  const rows=[['公司名称','在此输入公司名称'],['']];
+  rows.push(['科目',...months]);
+  labels.forEach(l=>rows.push([l,...months.map(()=>'')]));
+  
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  
+  // Column widths
+  ws['!cols']=[{wch:14},...months.map(()=>({wch:11}))];
+  
+  XLSX.utils.book_append_sheet(wb,ws,'经营数据');
+  XLSX.writeFile(wb,'经营看板_模板.xlsx');
+  ts('✅ 模板已下载');
+};
 
 // ====== UPLOAD ======
 const uz=$('uz'), fi=$('fi'), fl=$('fl'), go=$('go');
