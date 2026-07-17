@@ -324,6 +324,7 @@ go.onclick=async function(){
   // Debug: show parsed state
   const dbg=document.createElement('div');
   dbg.style.cssText='padding:8px;margin:8px 0;background:#f0f0e8;border-radius:6px;font-size:11px;white-space:pre-wrap';
+  dbg.id='dbgbox';
   dbg.innerHTML='<b>调试信息</b><br>'
     +'公司: '+CO[0].nm+'<br>'
     +'月份数: '+CO[0].ms.length+'<br>'
@@ -331,7 +332,12 @@ go.onclick=async function(){
     +'营收首尾: '+(CO[0].dt.revenue?CO[0].dt.revenue[0]+'...'+CO[0].dt.revenue[CO[0].dt.revenue.length-1]:'undefined')+'<br>'
     +'人数: '+(CO[0].dt.headcount?CO[0].dt.headcount[0]:'undefined');
   document.querySelector('.wrap').prepend(dbg);
-  try{bd();st($('s2'))}catch(e){ts('❌ '+e.message);console.error(e)}
+  try{
+    bd();
+    st($('s2'));
+  }catch(e){
+    dbg.innerHTML+='<br><b style="color:red">❌ 渲染错误: '+e.message+'</b><br>'+e.stack;
+  }
 };
 
 function af(file){
