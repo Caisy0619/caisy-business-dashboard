@@ -321,6 +321,16 @@ go.onclick=async function(){
   if(!ok){ts('部分文件解析失败');return}
   if(CO.length<1){ts('请上传至少1个文件');return}
   ML=CO[0].ms;
+  // Debug: show parsed state
+  const dbg=document.createElement('div');
+  dbg.style.cssText='padding:8px;margin:8px 0;background:#f0f0e8;border-radius:6px;font-size:11px;white-space:pre-wrap';
+  dbg.innerHTML='<b>调试信息</b><br>'
+    +'公司: '+CO[0].nm+'<br>'
+    +'月份数: '+CO[0].ms.length+'<br>'
+    +'dt keys: '+Object.keys(CO[0].dt).join(', ')+'<br>'
+    +'营收首尾: '+(CO[0].dt.revenue?CO[0].dt.revenue[0]+'...'+CO[0].dt.revenue[CO[0].dt.revenue.length-1]:'undefined')+'<br>'
+    +'人数: '+(CO[0].dt.headcount?CO[0].dt.headcount[0]:'undefined');
+  document.querySelector('.wrap').prepend(dbg);
   try{bd();st($('s2'))}catch(e){ts('❌ '+e.message);console.error(e)}
 };
 
